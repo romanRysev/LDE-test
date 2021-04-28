@@ -17,13 +17,11 @@ export default {
       let res = [{ label: "Выбрать всех" }]; // массив с результатом начинается с "Выбрать всех"
       let container = {}; // сюда будем складывать результаты поиска пользователей
       const listsObject = {}; // сделаем объект из lists, чтобы ускорить поиск т.к. искать в них будем часто и список может быть большим
-      let path = [];
 
       const structures = this.setParentIdForStructures();
 
       this.apiData.lists.forEach((item) => {
         listsObject[item.id] = item;
-        listsObject[item.id].paths = [];
       });
 
       /*this.apiData.structures.forEach((item) => {
@@ -31,27 +29,54 @@ export default {
           this.filterData(item.children, listsObject, item.id, container);
         }
       });*/
-      this.filterDataRec(structures, listsObject, container, path);
+      container = this.filterDataWithLevels(structures);
       console.log(container);
-
       this.apiData.lists.forEach((list) => {
-        res.push(...container[list.id]);
+        res.push(list);
+        const sourceTable = {};
+        container.forEach((item) => {
+          item.forEach((elem) => {
+            if (Object.entries(elem.children).length > 0) {
+              if (sourceTable[elem.parentId] !== undefined) {
+                res.splice(
+                  sourceTable[elem.parentId],
+                  0,
+                  ...[
+                    { id: elem.id, label: elem.label, parentId: elem.parentId },
+                    ...elem.children[list.id],
+                  ]
+                );
+              } else {
+                res.push({
+                  id: elem.id,
+                  label: elem.label,
+                  parentId: elem.parentId,
+                });
+                res.push(...elem.children[list.id]);
+              }
+            } else {
+              if (sourceTable[elem.id] == undefined) {
+                sourceTable[elem.id] = res.push({
+                  id: elem.id,
+                  label: elem.label,
+                  parentId: elem.parentId,
+                });
+              }
+            }
+          });
+        });
       });
-
       return res;
     },
   },
   methods: {
     setParentIdForStructures() {
       const data = this.apiData.structures.slice();
-      function recursive(data, parentId, path) {
+      function recursive(data, parentId) {
         data.forEach((item) => {
           item.parentId = parentId;
-          item.path = path;
-          const newPath = path.slice();
-          newPath.push({ id: item.id, label: item.label });
           if (item.children && item.children.length > 0) {
-            return recursive(item.children, item.id, newPath);
+            return recursive(item.children, item.id);
           } else {
             return;
           }
@@ -103,41 +128,48 @@ export default {
     }, // Функция получилась "грязная" - модифицируется аргумент "container". В данном случае мне кажется, что это применимо
     // т.к. "container" создавался только для этого и не будет использоваться нигде больше.
 
-    filterDataRec(data, listsObject, container) {
+    filterDataWithLevels(data, path = [], initial = []) {
+      const res = [...path];
       data.forEach((element) => {
         if (element.lists) {
           element.lists.forEach((listId) => {
-            if (listsObject[listId]) {
-              if (!container[listId]) {
-                container[listId] = listsObject[listId];
-                container[listId].paths.push({
-                  path: element.path,
-                  elements: [],
-                });
-                container[listId].paths[
-                  container[listId].paths.length - 1
-                ].elements.push(
-                  Object.assign({}, element, {
-                    currentListId: listId,
-                  })
-                );
-              } else {
-                container[listId].paths;
-              }
-
-              /*container[listId].push(
-                Object.assign({}, element, {
-                  currentListId: listId,
-                })
-              );*/
+            if (!res[res.length - 1].children[listId]) {
+              res[res.length - 1].children[listId] = [
+                {
+                  id: element.id,
+                  label: element.label,
+                  parentId: element.parentId,
+                },
+              ];
+            } else {
+              res[res.length - 1].children[listId].push({
+                id: element.id,
+                label: element.label,
+                parentId: element.parentId,
+              });
             }
           });
         } else if (element.children) {
-          this.filterDataRec(element.children, listsObject, container);
-        } else {
-          return;
+          const newPath = [
+            ...path,
+            {
+              id: element.id,
+              label: element.label,
+              parentId: element.parentId,
+              children: {},
+            },
+          ];
+          initial = this.filterDataWithLevels(
+            element.children,
+            newPath,
+            initial
+          );
         }
       });
+      if (res.length > 1) {
+        initial.push(res);
+      }
+      return initial;
     },
   },
 };
