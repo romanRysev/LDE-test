@@ -1,16 +1,18 @@
 <template>
   <div id="app">
-    <Main />
+    <List />
+    <Form />
   </div>
 </template>
 
 <script>
-import Main from "./components/Main.vue";
-
+import List from "./components/List.vue";
+import Form from "@/components/Form.vue";
 export default {
   name: "App",
   components: {
-    Main,
+    List,
+    Form,
   },
 };
 </script>
