@@ -1,4 +1,0 @@
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" enable-background="new 0 0 40 40">
-      <line x1="0" y1="0" x2="25" y2="25" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10"></line>
-      <line x1="25" y1="0" x2="0" y2="25" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-miterlimit="10"></line>    
-    </svg>

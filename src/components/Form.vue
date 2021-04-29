@@ -1,5 +1,5 @@
 <template>
-  <form action="" class="form" name="Form">
+  <form @submit="onSubmit" class="form" name="Form">
     <h1 class="form__header">Форма обратной связи</h1>
     <section>
       <div class="field">
@@ -48,85 +48,44 @@
         </select>
       </div>
       <div class="field field_type_checkbox">
-        <label for="SelfMessage" class="field__label">
+        <label
+          for="SelfMessage"
+          class="field__label field__label_type_checkbox"
+        >
           <input
-            class="field__input field__input_type_checkbox"
+            class="field__input field__input_type_toggle"
             type="checkbox"
             name="SelfMessage"
             id="SelfMessage"
             v-model="selfMessage"
-          /><span class="field__input-checkbox-pic">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-            >
-              <line
-                x1="14"
-                y1="14"
-                x2="25"
-                y2="5"
-                stroke="#000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-miterlimit="10"
-              ></line>
-              <line
-                x1="10"
-                y1="10"
-                x2="14"
-                y2="14"
-                stroke="#000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-miterlimit="10"
-              ></line></svg></span
-          >Отправить себе копию письма</label
+          />
+          Отправить себе копию письма</label
         >
       </div>
       <div class="field field_type_checkbox">
-        <label for="Accept" class="field__label">
+        <label for="Accept" class="field__label field__label_type_checkbox">
           <input
             class="field__input field__input_type_checkbox"
             type="checkbox"
             id="Accept"
             name="Accept"
             v-model="accept"
-          /><span class="field__input-checkbox-pic">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-            >
-              <line
-                x1="14"
-                y1="14"
-                x2="25"
-                y2="5"
-                stroke="#000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-miterlimit="10"
-              ></line>
-              <line
-                x1="10"
-                y1="10"
-                x2="14"
-                y2="14"
-                stroke="#000"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-miterlimit="10"
-              ></line></svg></span
-          >Согласие на обработку персональных данных</label
+          />
+          <svg class="field__input-icon_type_checkbox">
+            <rect x="0" y="0" width="20" height="20" />
+          </svg>
+          Согласие на обработку персональных данных</label
         >
       </div>
     </section>
     <section>
       <div class="field">
-        <button class="field__input button" type="submit" name="Submit">
+        <button
+          @click.prevent="onSubmit"
+          class="field__input button"
+          type="submit"
+          name="Submit"
+        >
           Отправить
         </button>
       </div>
@@ -145,6 +104,11 @@ export default {
       accept: true,
       selfMessage: false,
     };
+  },
+  methods: {
+    onSubmit() {
+      alert("Вы великолепны!");
+    },
   },
 };
 </script>
@@ -169,8 +133,6 @@ export default {
   flex-direction: column;
   align-items: start;
 }
-.field__label {
-}
 
 .field__input {
   padding: 5px;
@@ -186,27 +148,29 @@ export default {
 .field__input:active {
   outline: black 1px solid;
 }
-.field_type_checkbox {
-  flex-direction: row;
+.field__label_type_checkbox {
+  display: flex;
 }
-.field__input_type_checkbox {
-  border: none;
-  outline: none;
-}
-.field__input_type_checkbox:focus {
-  border: none;
-  outline: none;
-}
+.field__input_type_checkbox,
+.field__input_type_checkbox:focus,
 .field__input_type_checkbox:active {
   border: none;
   outline: none;
 }
-.field__input-checkbox-pic {
+
+.field__input-icon_type_checkbox {
+  fill: white;
   width: 20px;
-  background-color: white;
+  height: 20px;
+  margin-right: 5px;
+  border: 1px solid black;
+  box-sizing: border-box;
+  transition: all 0.3s linear;
 }
-.field__input_type_checkbox:checked + .field__input-checkbox-pic {
-  opacity: 0;
+
+.field__input_type_checkbox:checked + .field__input-icon_type_checkbox {
+  fill: black;
+  border: 1px solid white;
 }
 
 .field__input_type_select {
@@ -216,5 +180,36 @@ export default {
   appearance: none;
   padding-right: 30px;
   background-color: white;
+}
+.field__input_type_toggle {
+  position: relative;
+  width: 40px;
+  height: 21px;
+  margin-right: 5px;
+  background: #ffffff;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+}
+
+.field__input_type_toggle::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 2px;
+  width: 15px;
+  height: 15px;
+  background-color: black;
+  border-radius: 50%;
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.2, 0.85, 0.32, 1.2);
+}
+
+.field__input_type_toggle:checked::after {
+  transform: translateX(calc(100% + 3px));
+  background-color: #fff;
+}
+.field__input_type_toggle:checked {
+  background-color: black;
+  border: 1px solid white;
 }
 </style>

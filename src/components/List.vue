@@ -1,7 +1,15 @@
 <template>
   <div class="main">
-    <input type="checkbox" name="Levels" v-model="withLevels" />
-    <label for="Levels">Режим подразделений</label>
+    <label for="Levels" class="label">
+      <input
+        type="checkbox"
+        name="Levels"
+        id="Levels"
+        v-model="withLevels"
+        class="checkbox"
+      />
+      Режим подразделений</label
+    >
     <div v-for="(item, id) in filteredData" :key="id">
       <p :class="{ list: item.list }">{{ item }}</p>
     </div>
@@ -18,6 +26,10 @@ export default {
     };
   },
   computed: {
+    /**
+     * Returns data for template render.
+     * @returns {Row[]} array of objects
+     */
     filteredData() {
       const structures = this.setParentIdForStructures(this.apiData.structures);
       const listsObject = {}; // сделаем объект из lists, чтобы ускорить поиск т.к. искать в них будем часто и список может быть большим
@@ -27,6 +39,14 @@ export default {
       });
 
       if (this.withLevels) {
+        console.log(
+          this.filterDataWithLevels({
+            data: structures,
+            path: [],
+            listsObject: listsObject,
+            initial: [],
+          })
+        );
         return this.parseFiltredDataWithLevels(
           this.filterDataWithLevels({
             data: structures,
@@ -51,8 +71,19 @@ export default {
     },
   },
   methods: {
+    /**
+     * sets parentId property for each element of structures array
+     * @param {Structure[]} structures - array of structures
+     * @returns {Structure[]} structures - array of structures with {number | string} parentId property
+     */
     setParentIdForStructures(structures) {
       const data = structures.slice();
+      /**
+       * Recursuve subfunction
+       * @param {Structure[]} data - array of structures
+       * @param {number | string} parentId - ID of parent element
+       * @returns {Structure[]} structures - array of structures with parentId property
+       */
       function recursive(data, parentId) {
         data.forEach((item) => {
           item.parentId = parentId;
@@ -66,6 +97,16 @@ export default {
       }
       return recursive(data, null, []);
     },
+    /**
+     * Filter structures and searches for elements which included in the lists.
+     * @param {payload} payload : {
+          data: {structures[]},
+          listsObject: {listsObject}, - object with lists. Created for better searching.
+          parentId: {number | string},
+          container: {container}, - container object which contains result
+        }
+     * @returns {container} container - Object with numeric (list ID) properties of arrays for each list (like this: {12: element[], 15: element[]...})
+     */
     filterData(payload) {
       payload.data.forEach((element) => {
         if (element.lists) {
@@ -98,6 +139,17 @@ export default {
       });
       return payload.container;
     },
+    /**
+     * Filter structures and searches for elements which included in the lists.
+     * @param {payload} payload : {
+            data: structures,
+            path: [],
+            listsObject: listsObject,
+            initial: [],
+          }
+     * @returns {path[]} path - Array of objects. Each object contains info about current level in path to end of branch (id, label, parentId) and object with lists with elements of this lists.
+     * Like this: [{label: start, id: 0, parentId: null, children: []}, {label: "Дирекция", id: 153, parentId: 0, children: { 19: [elements], 20: [elements] }}]
+     */
     filterDataWithLevels(payload) {
       const res = [...payload.path];
       payload.data.forEach((element) => {
@@ -144,6 +196,11 @@ export default {
       }
       return payload.initial;
     },
+    /**
+     * Parse result of filterDataWithLevels function and create an array for render in template.
+     * @param {filterDataWithLevels[]} filterDataWithLevels - result of filterDataWithLevels function
+     * @returns {Row[]} Row[] - array of rows for render in template.
+     */
     parseFiltredDataWithLevels(filterDataWithLevels) {
       const res = [{ label: "Выбрать всех" }];
       this.apiData.lists.forEach((list) => {
@@ -174,7 +231,7 @@ export default {
                 sourceTable[elem.id] = res.push({
                   id: elem.id,
                   label: elem.label,
-                  parentId: elem.parentId,
+                  parentId: elem.parentId == null ? list.id : elem.parentId,
                 });
               }
             }
@@ -190,5 +247,11 @@ export default {
 <style scoped>
 .list {
   background-color: cornflowerblue;
+}
+.checkbox {
+  margin: 20px;
+}
+.label {
+  font-size: 1.5rem;
 }
 </style>
